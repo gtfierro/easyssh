@@ -7,6 +7,7 @@ package easyssh
 import (
 	"bufio"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net"
@@ -44,12 +45,12 @@ func getKeyFile(keypath string) (ssh.Signer, error) {
 	file := usr.HomeDir + keypath
 	buf, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not read keyfile")
 	}
 
 	pubkey, err := ssh.ParsePrivateKey(buf)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not parse keyfile")
 	}
 
 	return pubkey, nil
@@ -72,6 +73,8 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 
 	if pubkey, err := getKeyFile(ssh_conf.Key); err == nil {
 		auths = append(auths, ssh.PublicKeys(pubkey))
+	} else {
+		return nil, errors.Wrap(err, "get key")
 	}
 
 	config := &ssh.ClientConfig{
@@ -81,12 +84,12 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 
 	client, err := ssh.Dial("tcp", ssh_conf.Server+":"+ssh_conf.Port, config)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not dial ssh")
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "could not create ssh session")
 	}
 
 	return session, nil
