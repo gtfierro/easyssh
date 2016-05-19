@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	"golang.org/x/crypto/ssh"
@@ -37,12 +36,7 @@ type MakeConfig struct {
 // returns ssh.Signer from user you running app home path + cutted key path.
 // (ex. pubkey,err := getKeyFile("/.ssh/id_rsa") )
 func getKeyFile(keypath string) (ssh.Signer, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return nil, err
-	}
-
-	file := usr.HomeDir + keypath
+	file := keypath
 	buf, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read keyfile")
