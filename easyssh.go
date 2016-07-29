@@ -65,10 +65,12 @@ func (ssh_conf *MakeConfig) connect() (*ssh.Session, error) {
 		defer sshAgent.Close()
 	}
 
-	if pubkey, err := getKeyFile(ssh_conf.Key); err == nil {
-		auths = append(auths, ssh.PublicKeys(pubkey))
-	} else {
-		return nil, errors.Wrap(err, "get key")
+	if len(ssh_conf.Key) > 0 {
+		if pubkey, err := getKeyFile(ssh_conf.Key); err == nil {
+			auths = append(auths, ssh.PublicKeys(pubkey))
+		} else {
+			return nil, errors.Wrap(err, "get key")
+		}
 	}
 
 	config := &ssh.ClientConfig{
